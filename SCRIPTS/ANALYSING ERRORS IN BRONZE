@@ -1,0 +1,129 @@
+-----cleaning bronze layer table
+
+--1) CHECK FOR NULLS OR DUPLICATES IN PRIMARY KEY
+--- EXPECTATION ;NO RESULT
+SELECT CST_ID,COUNT(*) COUNT 
+FROM BRONZE.CRM_CUST_INFO
+GROUP BY CST_ID
+HAVING COUNT(*) >1   
+
+
+--1) CHECK FOR NULLS OR DUPLICATES IN PRIMARY KEY
+--- EXPECTATION ;NO RESULT
+SELECT CST_ID,COUNT(*) COUNT 
+FROM BRONZE.CRM_CUST_INFO
+GROUP BY CST_ID
+HAVING COUNT(*) >1 OR CST_ID IS NULL --- HERE ADDITION OF NULL FILTER USED TO CHECK WHETHER THE NULLS ARE MULTIPLE OR SINGLE
+
+
+----- CHECK FOR UNWANTED SPACES 
+--EXPECTATION ; NO RESULTS
+SELECT CST_GNDR FROM 
+BRONZE.CRM_CUST_INFO
+WHERE CST_GNDR!=TRIM(CST_GNDR)
+SELECT * FROM BRONZE.CRM_CUST_INFO
+
+----data standardization and consistency
+SELECT DISTINCT CST_gndr
+FROM BRONZE.CRM_CUST_INFO
+
+
+------ QUALITY CHECK OF SILVER TABLE
+--1) CHECK FOR NULLS OR DUPLICATES IN PRIMARY KEY
+--- EXPECTATION ;NO RESULT
+SELECT prd_id,COUNT(*) COUNT 
+FROM silver.CRM_prd_INFO
+GROUP BY prd_id
+HAVING COUNT(*) >1 OR prd_id IS NULL --- HERE ADDITION OF NULL FILTER USED TO CHECK WHETHER THE NULLS ARE MULTIPLE OR SINGLE
+
+
+----- CHECK FOR UNWANTED SPACES 
+--EXPECTATION ; NO RESULTS
+SELECT prd_line FROM 
+silver.CRM_prd_INFO
+WHERE prd_line !=TRIM(prd_line )
+SELECT * FROM SILVER.CRM_CUST_INFO
+
+----data standardization and consistency
+SELECT DISTINCT prd_line
+FROM silver.CRM_prd_INFO
+
+-------*** checking for bronze.crm_prd_info 
+---- do check all above cases and also do check following for start and end date check 
+----expectations ; no result
+select * from silver.crm_prd_info
+where prd_start_date >prd_end_date
+---shows max error cases supporting above query
+---- check for cost 
+select * from  silver.crm_prd_info where prd_cost is null or prd_cost <0
+select * from  silver.crm_prd_info 
+
+--------**** checking for bronze.crm_sales_details
+---issue with dates columns
+select * from bronze.crm_sales_details
+select nullif (sls_order_dt,0)as sls_order_dt from bronze.crm_sales_details
+where sls_order_dt <=0 or len(sls_order_dt)!=8 or sls_order_dt > 20500101
+
+select sls_order_dt as sls_order_dt from bronze.crm_sales_details
+where sls_order_dt <=0 or len(sls_order_dt)!=8 or sls_order_dt > 20500101 or sls_order_dt < 19000101
+
+--- check for any issue with dates in comparision with other ,ensuring correct order of all dates
+----expectations zero output
+select sls_order_dt,sls_ship_dt,sls_due_dt from bronze.crm_sales_details
+where cast(cast(sls_order_dt as varchar) as date)>cast(cast(sls_ship_dt as varchar) as date) or ---koushik recheck this area no need of castind the 
+cast(cast(sls_order_dt as varchar) as date)> cast(cast (sls_due_dt as varchar) as date) --- columns as the filtration doesnt make difference with cast or not
+
+--- data consistency ;between saleds,quantity,and price
+--- for sales quantity price columns in this table we have a business rule called  sales = quantity * price(negative ,zeros ,nulls are not allowed)
+--- check for the rows which violate above condition
+---expectation should be zero
+select distinct 
+sls_sales,
+sls_quantity,
+sls_price
+from bronze.crm_sales_details
+where sls_sales!=sls_quantity * sls_price
+or sls_sales is null or sls_quantity is null or sls_price is null
+or sls_sales <= 0 or sls_quantity<=0 or sls_price<=0
+order by sls_sales,sls_quantity,sls_price
+
+
+-------now validation for table  bronze.erp_cust_az12
+select cid,
+case when cid like 'nas%' then substring(cid,4,len(cid))
+else cid
+end cid,
+bdate,
+gender
+FROM  bronze.erp_cust_az12
+where case when cid like 'nas%' then substring(cid,4,len(CID))
+ELSE CID 
+END NOT IN (SELECT cst_key FROM SILVER.CRM_CUST_INFO)
+select * from [SILVER].[crm_cust_info]
+
+
+----identify out of range bdays
+select 
+bdate from bronze.erp_cust_az12
+where bdate<'1924-01-01' or bdate >getdate() or len(bdate) !=10
+-----data standardization and consistency check
+select distinct trim(gender) from bronze.erp_cust_az12
+
+-----checking** the table bronze.erp_loc_a101
+select cid,cntry from bronze.erp_loc_a101 --- we remove tyhe'-' from cid to make it match with cst_key in cust info
+
+select cst_key from silver.crm_cust_info
+---- check for data consistency 
+
+select distinct cntry 
+from bronze.erp_loc_a101
+order by cntry
+
+
+-----CHECKING FOR TABLE BRONZE.erp_px_cat_G1v2
+SELECT * FROM BRONZE.erp_px_cat_G1v2
+WHERE TRIM(SUBCAT) != SUBCAT
+
+------CHECK FOR DATA CONSISTENCY
+SELECT DISTINCT MAINTAINANCE FROM  BRONZE.erp_px_cat_G1v2
+ 
