@@ -1,76 +1,41 @@
-# SQL_DATA_WAREHOUSE_PROJECT
-BUILDING A MODERN DATA WAREHOUSE WITH SQL SERVER,INCLUDING ETLPROCESSES,DATA MODELING AND ANALYTICS
-SQL Data Warehouse Project: Medallion Architecture
-📌 Project Overview
-This project demonstrates the end-to-end design and implementation of a modern Data Warehouse using SQL Server and T-SQL. Following the Medallion Architecture, I transformed raw, unstructured data into a business-ready "Gold" layer optimized for reporting and analytics.
+# Modern Data Warehouse Implementation
+## Medallion Architecture & SQL Engineering
 
-The project simulates a real-world scenario where a retail business needs to centralize data from various sources (CRM, ERP) to analyze sales performance and customer demographics.
+### 🌟 Project Overview
+This project demonstrates the design and deployment of a professional-grade Data Warehouse following the **Medallion Architecture**. It transforms raw, fragmented CRM and Sales data into a "Single Source of Truth" optimized for business intelligence and advanced analytics.
 
-🏗️ Architecture: The Medallion Approach
-The data flows through three distinct stages to ensure quality and integrity:
+### 🏗️ Data Architecture (The Medallion Approach)
+The project is structured into three distinct layers to ensure data quality and lineage:
 
-Bronze (Raw): Direct ingestion of source CSV files. No transformations are applied here to maintain a "source of truth."
+1.  **🥉 Bronze Layer (Raw Ingestion):**
+    * Stores data in its original format (e.g., `bronze.crm_sales_details`).
+    * Maintains historical integrity with no modifications, allowing for full traceability.
+2.  **🥈 Silver Layer (Cleaned & Standardized):**
+    * Performs data cleansing, deduplication, and normalization (e.g., `silver.crm_sales_details`).
+    * Handles null values, date formatting, and schema enforcement.
+3.  **🥇 Gold Layer (Business Ready):**
+    * Implemented using a **Star Schema** with optimized Fact and Dimension tables.
+    * Utilizes **SQL Views** for high-performance reporting and KPI calculation.
 
-Silver (Standardized): Data is cleaned, deduplicated, and cast into correct data types. Standardized formats are applied to dates, currency, and strings.
+### 🛠️ Tech Stack & Skills
+* **Language:** Advanced SQL (TSQL / PostgreSQL)
+* **Architecture:** Medallion Framework (Bronze, Silver, Gold)
+* **Modeling:** Star Schema, Fact/Dimension Modeling, Data Normalization
+* **Transformation:** CTEs, Window Functions, Stored Procedures
+* **Integrity:** Primary/Foreign Key constraints and Data Quality checks
 
-Gold (Analytics): Business logic is applied. Data is modeled into a Star Schema consisting of Fact and Dimension tables, optimized for Power BI/Tableau.
+### 🚀 Key Features
+* **Automated Logic:** Developed reusable SQL scripts for multi-stage transformations.
+* **Scalability:** Designed the schema to be easily migratable to **Databricks** or Snowflake.
+* **Analytics-Ready:** Pre-configured views for immediate consumption by Power BI or Tableau.
 
-🛠️ Tech Stack & Tools
-Language: T-SQL (Transact-SQL)
+### 📈 Future Roadmap
+* **Python Integration:** Developing ETL scripts using **Pandas** and **SQLAlchemy** to automate the ingestion from Bronze to Silver.
+* **Cloud Orchestration:** Implementing this logic within **Databricks** utilizing PySpark for large-scale distributed processing.
+* **Agentic AI:** Integrating a natural language interface to query the Gold layer dynamically.
 
-Database: Microsoft SQL Server
+---
+**Developer:** M Koushik Reddy  
+**Background:** Mechanical Engineering Graduate | Aspiring Data Engineer  
+**Status:** Actively transitioning to high-scale Data & AI roles.
 
-IDE: SQL Server Management Studio (SSMS)
-
-Modeling: Dimensional Modeling (Star Schema)
-
-🚀 Key Features & Workflow
-1. Data Ingestion (Bronze)
-Created a dedicated bronze schema.
-
-Developed stored procedures to automate the loading of CSV files using the BULK INSERT command.
-
-Implemented "Truncate and Load" logic for full data refreshes.
-
-2. Data Cleaning & Transformation (Silver)
-Identified and handled missing values and outliers.
-
-Standardized text data (e.g., converting 'M'/'F' to 'Male'/'Female').
-
-Removed duplicates using ROW_NUMBER() and CTE methods.
-
-Enforced data integrity by ensuring primary keys and foreign keys align.
-
-3. Dimensional Modeling (Gold)
-Designed a Star Schema to reduce join complexity and improve query performance.
-
-Fact Tables: Centralized quantitative data (Sales, Quantity, Price).
-
-Dimension Tables: Descriptive attributes (Customer details, Product categories, Geography).
-
-📂 Project Structure
-Plaintext
-├── Scripts/
-│   ├── 01_Bronze_Layer/     # Scripts for table creation and data loading
-│   ├── 02_Silver_Layer/     # Data cleaning and standardization scripts
-│   ├── 03_Gold_Layer/       # Transformation into Fact and Dimension tables
-│   └── 04_Analytics/        # Sample business queries and views
-├── Data/                    # Source CSV files (or links to datasets)
-└── README.md                # Project documentation
-📈 Sample Business Insights
-Using the final Gold layer, the warehouse can answer critical business questions such as:
-
-What is the total revenue per product category over time?
-
-Which geographic regions have the highest customer churn?
-
-What is the average order value (AOV) per customer segment?
-
-📝 How to Use
-Clone this repository.
-
-Run the init_database.sql script to create the environment.
-
-Execute scripts in the Scripts/ folder in numerical order.
-
-(Optional) Connect the gold views to a BI tool of your choice.
